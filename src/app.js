@@ -23,19 +23,24 @@ const schema = {
 		.keys({
 			name: Joi.string().trim().required(),
 			email: Joi.string().trim().email().required(),
-			password: Joi.string().alphanum().required(),
-			confirmPassword: Joi.string().alphanum().required(),
+			password: Joi.string().trim().required(),
+			confirmPassword: Joi.string().trim().required(),
 		})
 		.with('password', 'confirmPassword'),
 	loginPOST: Joi.object().keys({
 		email: Joi.string().trim().email().required(),
-		password: Joi.string().alphanum().required(),
+		password: Joi.string().trim().required(),
+	}),
+	financesPOST: Joi.object().keys({
+		date: Joi.string().trim().required(),
+		value: Joi.number().required(),
+		description: Joi.string().trim().required(),
+		type: Joi.string().valid('income', 'outcome').required(),
 	}),
 };
 
 app.post('/signup', async (req, res) => {
-	const user = req.body;
-	const { value, error } = schema.signupPOST.validate(user, {
+	const { value, error } = schema.signupPOST.validate(req.body, {
 		abortEarly: false,
 	});
 	if (error) {
@@ -73,7 +78,6 @@ app.post('/login', async (req, res) => {
 		}
 
 		const isValid = bcrypt.compareSync(password, user.password);
-
 		if (isValid) {
 			const token = uuid();
 			await db.collection('sessions').insertOne({
@@ -84,6 +88,38 @@ app.post('/login', async (req, res) => {
 			return res.status(200).send({ name: user.name, token });
 		} else {
 			return res.status(401).send('Email ou senha incorretos.');
+		}
+	} catch (err) {
+		return res.status(500).send(err.message);
+	}
+});
+
+app.post('/finances', async (req, res) => {
+	const { value, error } = schema.financesPOST.validate(req.body, {
+		abortEarly: false,
+	});
+	if (error) {
+		const message = error.details.map((detail) => detail.message).join(',');
+		return res.status(422).send(message);
+	}
+
+	const token = req.headers.authorization?.replace('Bearer', '');
+	if (!token) {
+		return res.sendStatus(401);
+	}
+
+	try {
+		const session = await db.collection('sessions').findOne({ token });
+		if (!session) {
+			return res.sendStatus(401);
+		}
+
+		const user = await db.collection('users').findOne({ _id: session.userId });
+		if (user) {
+			await db.collection('finances').insertOne({ ...req.body });
+			res.sendStatus(201);
+		} else {
+			return res.sendStatus(404);
 		}
 	} catch (err) {
 		return res.status(500).send(err.message);
