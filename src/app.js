@@ -84,7 +84,6 @@ app.post('/login', async (req, res) => {
 				userId: user._id,
 				token,
 			});
-
 			return res.status(200).send({ name: user.name, token });
 		} else {
 			return res.status(401).send('Email ou senha incorretos.');
@@ -117,7 +116,31 @@ app.post('/finances', async (req, res) => {
 		const user = await db.collection('users').findOne({ _id: session.userId });
 		if (user) {
 			await db.collection('finances').insertOne({ ...req.body });
-			res.sendStatus(201);
+			return res.sendStatus(201);
+		} else {
+			return res.sendStatus(404);
+		}
+	} catch (err) {
+		return res.status(500).send(err.message);
+	}
+});
+
+app.get('/finances', async (req, res) => {
+	const token = req.headers.authorization?.replace('Bearer', '');
+	if (!token) {
+		return res.sendStatus(401);
+	}
+
+	try {
+		const session = await db.collection('sessions').findOne({ token });
+		if (!session) {
+			return res.sendStatus(401);
+		}
+
+		const user = await db.collection('users').findOne({ _id: session.userId });
+		if (user) {
+			const finances = await db.collection('finances').find().toArray();
+			return res.status(200).send(finances);
 		} else {
 			return res.sendStatus(404);
 		}
