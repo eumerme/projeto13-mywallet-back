@@ -20,7 +20,6 @@ const schemas = {
 		description: Joi.string().trim().required(),
 		type: Joi.string().valid('credit', 'debit').required(),
 	}),
-	//tentar validar o token
 };
 
 export { schemas };

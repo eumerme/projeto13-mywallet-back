@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { db } from '../database/db.js';
 import { schemas } from '../schemas/schemas.js';
 
@@ -27,10 +28,25 @@ async function getTransactions(req, res) {
 			.find({ email: user.email })
 			.toArray();
 
+		transactions.forEach((transaction) => delete transaction.email);
+
 		return res.status(200).send(transactions);
 	} catch (err) {
 		return res.status(500).send(err.message);
 	}
 }
 
-export { createTransaction, getTransactions };
+async function deleteTransaction(req, res) {
+	const { user: transactionId } = req.headers;
+	try {
+		await db
+			.collection('transactions')
+			.deleteOne({ _id: new ObjectId(transactionId) });
+
+		return res.sendStatus(200);
+	} catch (err) {
+		return res.status(500).send(err.message);
+	}
+}
+
+export { createTransaction, getTransactions, deleteTransaction };
