@@ -2,6 +2,8 @@ import bcrypt from 'bcrypt';
 import { db } from '../database/db.js';
 import { schemas } from '../schemas/schemas.js';
 import { v4 as uuid } from 'uuid';
+import { STATUS_CODE } from '../enums/statusCode.js';
+import { COLLECTION } from '../enums/collections.js';
 
 async function signup(req, res) {
 	const user = req.body;
@@ -13,14 +15,16 @@ async function signup(req, res) {
 			.map((detail) => detail.message)
 			.join(',')
 			.replace('[ref:password]', 'equal to password');
-		return res.status(422).send({ message });
+		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
 	}
 
 	const userExists = await db
-		.collection('users')
+		.collection(COLLECTION.USERS)
 		.findOne({ email: user.email });
 	if (userExists) {
-		return res.status(409).send({ message: 'Usuário já cadastrado.' });
+		return res
+			.status(STATUS_CODE.CONFLICT)
+			.send({ message: 'Usuário já cadastrado.' });
 	}
 
 	const passwordHash = bcrypt.hashSync(user.password, 10);
@@ -28,11 +32,15 @@ async function signup(req, res) {
 	try {
 		delete user.confirmPassword;
 
-		await db.collection('users').insertOne({ ...user, password: passwordHash });
+		await db
+			.collection(COLLECTION.USERS)
+			.insertOne({ ...user, password: passwordHash });
 
-		return res.status(201).send({ message: 'Cadastro criado com sucesso.' });
+		return res
+			.status(STATUS_CODE.CREATED)
+			.send({ message: 'Cadastro criado com sucesso.' });
 	} catch (err) {
-		return res.status(500).send(err.message);
+		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
 	}
 }
 
@@ -44,11 +52,11 @@ async function login(req, res) {
 	);
 	if (error) {
 		const message = error.details.map((detail) => detail.message).join(',');
-		return res.status(422).send({ message });
+		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
 	}
 
 	try {
-		const user = await db.collection('users').findOne({ email });
+		const user = await db.collection(COLLECTION.USERS).findOne({ email });
 		if (!user) {
 			return res.sendStatus(404);
 		}
@@ -57,7 +65,7 @@ async function login(req, res) {
 		if (user && isValid) {
 			const token = uuid();
 
-			await db.collection('sessions').insertOne({
+			await db.collection(COLLECTION.SESSIONS).insertOne({
 				userId: user._id,
 				token,
 			});
@@ -67,18 +75,18 @@ async function login(req, res) {
 			return res.status(401).send({ message: 'Email ou senha incorretos.' });
 		}
 	} catch (err) {
-		return res.status(500).send(err.message);
+		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
 	}
 }
 
 async function logout(req, res) {
 	const { token } = res.locals;
 	try {
-		await db.collection('sessions').deleteOne({ token });
+		await db.collection(COLLECTION.SESSIONS).deleteOne({ token });
 
 		return res.sendStatus(200);
 	} catch (err) {
-		return res.status(500).send(err.message);
+		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
 	}
 }
 
