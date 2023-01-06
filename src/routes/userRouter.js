@@ -1,15 +1,14 @@
-import { Router } from 'express';
-import tokenValidation from '../middlewares/tokenValidation.js';
-import {
-	createTransaction,
-	getTransactions,
-	deleteTransaction,
-} from '../controllers/userController.js';
+import { Router } from "express";
+import { tokenValidation, validateBody } from "../middlewares/index.js";
+import { signIn, signOut, signUp } from "../controllers/index.js";
+import { loginBody, signupBody } from "../schemas/index.js";
 
 const userRouter = Router();
 
-userRouter.post('/transactions', tokenValidation, createTransaction);
-userRouter.get('/transactions', tokenValidation, getTransactions);
-userRouter.delete('/transactions', deleteTransaction);
+userRouter
+	.post("/signup", validateBody(signupBody), signUp)
+	.post("/login", validateBody(loginBody), signIn)
+	.all("/*", tokenValidation)
+	.post("/logout", signOut);
 
 export { userRouter };

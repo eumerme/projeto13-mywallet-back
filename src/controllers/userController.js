@@ -1,56 +1,48 @@
-import { ObjectId } from 'mongodb';
-import { db } from '../database/db.js';
-import { schemas } from '../schemas/schemas.js';
-import { STATUS_CODE } from '../enums/statusCode.js';
-import { COLLECTION } from '../enums/collections.js';
+import { userService } from "../services/index.js";
+import { conflict, created, notFound, ok, serverError, unauthorized } from "../utils/resReturn.js";
 
-async function createTransaction(req, res) {
-	const { value, error } = schemas.transactionsPOST.validate(req.body, {
-		abortEarly: false,
-	});
-	if (error) {
-		const message = error.details.map((detail) => detail.message).join(',');
-		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
-	}
+async function signUp(req, res) {
+	const user = req.body;
+	delete user.confirmPassword;
 
 	try {
-		await db.collection(COLLECTION.TRANSACTIONS).insertOne({ ...req.body });
+		await userService.postUser(user);
 
-		return res
-			.status(STATUS_CODE.CREATED)
-			.send({ message: 'Valor inserido com sucesso.' });
+		return created(res);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		if (err.name === "ConflictError") {
+			return conflict(res);
+		}
+		return serverError(res);
 	}
 }
 
-async function getTransactions(req, res) {
-	const { user } = res.locals;
+async function signIn(req, res) {
+	const { email, password } = req.body;
+
 	try {
-		const transactions = await db
-			.collection(COLLECTION.TRANSACTIONS)
-			.find({ email: user.email })
-			.toArray();
-
-		transactions.forEach((transaction) => delete transaction.email);
-
-		return res.status(STATUS_CODE.OK).send(transactions);
+		const userData = await userService.logIn({ email, password });
+		return ok(res, userData);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		if (err.name === "UnauthorizedError") {
+			return unauthorized(res);
+		}
+		if (err.name === "NotFoundError") {
+			return notFound(res);
+		}
+		return serverError(res);
 	}
 }
 
-async function deleteTransaction(req, res) {
-	const { user: transactionId } = req.headers;
-	try {
-		await db
-			.collection(COLLECTION.TRANSACTIONS)
-			.deleteOne({ _id: new ObjectId(transactionId) });
+async function signOut(req, res) {
+	const { token } = res.locals;
 
-		return res.sendStatus(STATUS_CODE.OK);
+	try {
+		await userService.logOut(token);
+		return ok(res);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		return serverError(res);
 	}
 }
 
-export { createTransaction, getTransactions, deleteTransaction };
+export { signUp, signIn, signOut };
