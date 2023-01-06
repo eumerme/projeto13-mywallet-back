@@ -1,93 +1,66 @@
-import bcrypt from 'bcrypt';
-import { db } from '../database/db.js';
-import { schemas } from '../schemas/schemas.js';
-import { v4 as uuid } from 'uuid';
-import { STATUS_CODE } from '../enums/statusCode.js';
-import { COLLECTION } from '../enums/collections.js';
+import { schemas } from "../schemas/schemas.js";
+import { STATUS_CODE } from "../enums/statusCode.js";
+import { authService } from "../services/authService.js";
 
-async function signup(req, res) {
+async function signUp(req, res) {
 	const user = req.body;
 	const { value, error } = schemas.signupPOST.validate(user, {
 		abortEarly: false,
 	});
+
 	if (error) {
 		const message = error.details
 			.map((detail) => detail.message)
-			.join(',')
-			.replace('[ref:password]', 'equal to password');
+			.join(",")
+			.replace("[ref:password]", "equal to password");
 		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
 	}
-
-	const userExists = await db
-		.collection(COLLECTION.USERS)
-		.findOne({ email: user.email });
-	if (userExists) {
-		return res
-			.status(STATUS_CODE.CONFLICT)
-			.send({ message: 'Usuário já cadastrado.' });
-	}
-
-	const passwordHash = bcrypt.hashSync(user.password, 10);
 
 	try {
 		delete user.confirmPassword;
 
-		await db
-			.collection(COLLECTION.USERS)
-			.insertOne({ ...user, password: passwordHash });
+		await authService.postUser(user);
 
-		return res
-			.status(STATUS_CODE.CREATED)
-			.send({ message: 'Cadastro criado com sucesso.' });
+		return res.sendStatus(STATUS_CODE.CREATED);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		if (err.name === "ConflictError") {
+			return res.sendStatus(httpStatus.CONFLICT);
+		}
+		return res.sendStatus(STATUS_CODE.SERVER_ERROR);
 	}
 }
 
-async function login(req, res) {
+async function signIn(req, res) {
 	const { email, password } = req.body;
-	const { value, error } = schemas.loginPOST.validate(
-		{ email, password },
-		{ abortEarly: false }
-	);
+	const { value, error } = schemas.loginPOST.validate({ email, password }, { abortEarly: false });
 	if (error) {
-		const message = error.details.map((detail) => detail.message).join(',');
+		const message = error.details.map((detail) => detail.message).join(",");
 		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
 	}
 
 	try {
-		const user = await db.collection(COLLECTION.USERS).findOne({ email });
-		if (!user) {
-			return res.sendStatus(404);
-		}
-
-		const isValid = bcrypt.compareSync(password, user.password);
-		if (user && isValid) {
-			const token = uuid();
-
-			await db.collection(COLLECTION.SESSIONS).insertOne({
-				userId: user._id,
-				token,
-			});
-
-			return res.status(200).send({ name: user.name, token, email });
-		} else {
-			return res.status(401).send({ message: 'Email ou senha incorretos.' });
-		}
+		const userData = await authService.logIn({ email, password });
+		return res.status(STATUS_CODE.OK).send(userData);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		if (err.name === "UnauthorizedError") {
+			return res.sendStatus(STATUS_CODE.UNAUTHORIZED);
+		}
+		if (err.name === "NotFoundError") {
+			return res.sendStatus(STATUS_CODE.NOT_FOUND);
+		}
+		return res.sendStatus(STATUS_CODE.SERVER_ERROR);
 	}
 }
 
-async function logout(req, res) {
+async function signOut(req, res) {
 	const { token } = res.locals;
-	try {
-		await db.collection(COLLECTION.SESSIONS).deleteOne({ token });
 
-		return res.sendStatus(200);
+	try {
+		await authService.logOut(token);
+		return res.sendStatus(STATUS_CODE.OK);
 	} catch (err) {
-		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
+		return res.sendStatus(STATUS_CODE.SERVER_ERROR);
 	}
 }
 
-export { signup, login, logout };
+export { signUp, signIn, signOut };

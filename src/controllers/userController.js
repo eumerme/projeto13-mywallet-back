@@ -1,15 +1,15 @@
-import { ObjectId } from 'mongodb';
-import { db } from '../database/db.js';
-import { schemas } from '../schemas/schemas.js';
-import { STATUS_CODE } from '../enums/statusCode.js';
-import { COLLECTION } from '../enums/collections.js';
+import { ObjectId } from "mongodb";
+import { db } from "../database/db.js";
+import { schemas } from "../schemas/schemas.js";
+import { STATUS_CODE } from "../enums/statusCode.js";
+import { COLLECTION } from "../enums/collections.js";
 
 async function createTransaction(req, res) {
 	const { value, error } = schemas.transactionsPOST.validate(req.body, {
 		abortEarly: false,
 	});
 	if (error) {
-		const message = error.details.map((detail) => detail.message).join(',');
+		const message = error.details.map((detail) => detail.message).join(",");
 		return res.status(STATUS_CODE.UNPROCESSABLE_ENTITY).send({ message });
 	}
 
@@ -18,7 +18,7 @@ async function createTransaction(req, res) {
 
 		return res
 			.status(STATUS_CODE.CREATED)
-			.send({ message: 'Valor inserido com sucesso.' });
+			.send({ message: "Valor inserido com sucesso." });
 	} catch (err) {
 		return res.status(STATUS_CODE.SERVER_ERROR).send(err.message);
 	}
