@@ -1,4 +1,4 @@
-const STATUS_CODE = Object.freeze({
+const httpStatus = Object.freeze({
 	OK: 200,
 	CREATED: 201,
 	UNAUTHORIZED: 401,
@@ -8,4 +8,4 @@ const STATUS_CODE = Object.freeze({
 	SERVER_ERROR: 500,
 });
 
-export { STATUS_CODE };
+export { httpStatus };

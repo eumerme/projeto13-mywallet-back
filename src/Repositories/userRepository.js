@@ -1,12 +1,12 @@
 import { db } from "../database/db.js";
-import { COLLECTION } from "../enums/collections.js";
+import { collection } from "../enums/collections.js";
 
 async function createUser(user) {
-	return db.collection(COLLECTION.USERS).insertOne(user);
+	return db.collection(collection.USERS).insertOne(user);
 }
 
 async function findUserByEmail(email) {
-	return db.collection(COLLECTION.USERS).findOne(email);
+	return db.collection(collection.USERS).findOne(email);
 }
 
 export const userRepository = { createUser, findUserByEmail };

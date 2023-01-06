@@ -1,12 +1,12 @@
 import { db } from "../database/db.js";
-import { COLLECTION } from "../enums/collections.js";
+import { collection } from "../enums/collections.js";
 
 async function createSession(data) {
-	return db.collection(COLLECTION.SESSIONS).insertOne(data);
+	return db.collection(collection.SESSIONS).insertOne(data);
 }
 
 async function deleteSession(token) {
-	return db.collection(COLLECTION.SESSIONS).deleteOne(token);
+	return db.collection(collection.SESSIONS).deleteOne(token);
 }
 
 export const sessionRepository = { createSession, deleteSession };
