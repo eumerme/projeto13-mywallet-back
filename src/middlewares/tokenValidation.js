@@ -1,8 +1,7 @@
 import { db } from "../database/db.js";
-import { httpStatus } from "../enums/httpStatus.js";
-import { collection } from "../enums/collections.js";
+import { collection, httpStatus } from "../enums/index.js";
 
-export default async function tokenValidation(req, res, next) {
+export async function tokenValidation(req, res, next) {
 	const token = req.headers.authorization?.replace("Bearer ", "");
 	if (!token) {
 		return res.sendStatus(httpStatus.UNAUTHORIZED);

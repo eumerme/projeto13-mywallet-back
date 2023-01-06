@@ -1,4 +1,4 @@
-import { httpStatus } from "../enums/httpStatus.js";
+import { httpStatus } from "../enums/index.js";
 
 function validate(schema, type) {
 	return (req, res, next) => {

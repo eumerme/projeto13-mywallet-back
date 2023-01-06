@@ -1,10 +1,7 @@
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
-import { conflictError } from "../errors/conflictError.js";
-import { notFoundError } from "../errors/notFoundError.js";
-import { unauthorizedError } from "../errors/unauthorizedError.js";
-import { sessionRepository } from "../Repositories/sessionRepository.js";
-import { userRepository } from "../Repositories/userRepository.js";
+import { sessionRepository, userRepository } from "../Repositories/index.js";
+import { conflictError, notFoundError, unauthorizedError } from "../errors/index.js";
 
 async function postUser(user) {
 	const userExists = await userRepository.findUserByEmail({ email: user.email });
@@ -41,4 +38,4 @@ async function logOut({ token }) {
 	return sessionRepository.deleteSession({ token });
 }
 
-export const authService = { postUser, logIn, logOut };
+export const userService = { postUser, logIn, logOut };

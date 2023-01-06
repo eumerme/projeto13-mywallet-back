@@ -1,5 +1,5 @@
 import { db } from "../database/db.js";
-import { collection } from "../enums/collections.js";
+import { collection } from "../enums/index.js";
 
 async function createUser(user) {
 	return db.collection(collection.USERS).insertOne(user);

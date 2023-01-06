@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../database/db.js";
-import { httpStatus } from "../enums/httpStatus.js";
-import { collection } from "../enums/collections.js";
+import { collection, httpStatus } from "../enums/index.js";
 
 async function createTransaction(req, res) {
 	const body = req.body;

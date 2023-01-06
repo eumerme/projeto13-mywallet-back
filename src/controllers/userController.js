@@ -1,12 +1,12 @@
-import { httpStatus } from "../enums/httpStatus.js";
-import { authService } from "../services/userService.js";
+import { httpStatus } from "../enums/index.js";
+import { userService } from "../services/index.js";
 
 async function signUp(req, res) {
 	const user = req.body;
 	delete user.confirmPassword;
 
 	try {
-		await authService.postUser(user);
+		await userService.postUser(user);
 
 		return res.sendStatus(httpStatus.CREATED);
 	} catch (err) {
@@ -21,7 +21,7 @@ async function signIn(req, res) {
 	const { email, password } = req.body;
 
 	try {
-		const userData = await authService.logIn({ email, password });
+		const userData = await userService.logIn({ email, password });
 		return res.status(httpStatus.OK).send(userData);
 	} catch (err) {
 		if (err.name === "UnauthorizedError") {
@@ -38,7 +38,7 @@ async function signOut(req, res) {
 	const { token } = res.locals;
 
 	try {
-		await authService.logOut(token);
+		await userService.logOut(token);
 		return res.sendStatus(httpStatus.OK);
 	} catch (err) {
 		return res.sendStatus(httpStatus.SERVER_ERROR);

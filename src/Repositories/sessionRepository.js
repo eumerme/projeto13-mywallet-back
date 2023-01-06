@@ -1,5 +1,5 @@
 import { db } from "../database/db.js";
-import { collection } from "../enums/collections.js";
+import { collection } from "../enums/index.js";
 
 async function createSession(data) {
 	return db.collection(collection.SESSIONS).insertOne(data);
