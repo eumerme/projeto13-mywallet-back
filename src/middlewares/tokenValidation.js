@@ -1,26 +1,23 @@
-import { db } from "../database/db.js";
-import { collection, httpStatus } from "../enums/index.js";
+import { sessionRepository, userRepository } from "../Repositories/index.js";
+import { unauthorized } from "../utils/resReturn.js";
 
 export async function tokenValidation(req, res, next) {
 	const token = req.headers.authorization?.replace("Bearer ", "");
 	if (!token) {
-		return res.sendStatus(httpStatus.UNAUTHORIZED);
+		return unauthorized(res);
 	}
 
-	const session = await db.collection(collection.SESSIONS).findOne({ token });
+	const session = await sessionRepository.findSession({ token });
 	if (!session) {
-		return res.sendStatus(httpStatus.UNAUTHORIZED);
+		return unauthorized(res);
 	}
 
-	const user = await db.collection(collection.USERS).findOne({
-		_id: session.userId,
-	});
+	const user = await userRepository.findUserById(session.userId);
 	if (!user) {
-		return res.sendStatus(httpStatus.UNAUTHORIZED);
+		return unauthorized(res);
 	}
 
 	delete user.password;
-
 	res.locals.token = token;
 	res.locals.user = user;
 

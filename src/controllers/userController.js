@@ -1,5 +1,5 @@
-import { httpStatus } from "../enums/index.js";
 import { userService } from "../services/index.js";
+import { conflict, created, notFound, ok, serverError, unauthorized } from "../utils/resReturn.js";
 
 async function signUp(req, res) {
 	const user = req.body;
@@ -8,12 +8,12 @@ async function signUp(req, res) {
 	try {
 		await userService.postUser(user);
 
-		return res.sendStatus(httpStatus.CREATED);
+		return created(res);
 	} catch (err) {
 		if (err.name === "ConflictError") {
-			return res.sendStatus(httpStatus.CONFLICT);
+			return conflict(res);
 		}
-		return res.sendStatus(httpStatus.SERVER_ERROR);
+		return serverError(res);
 	}
 }
 
@@ -22,15 +22,15 @@ async function signIn(req, res) {
 
 	try {
 		const userData = await userService.logIn({ email, password });
-		return res.status(httpStatus.OK).send(userData);
+		return ok(res, userData);
 	} catch (err) {
 		if (err.name === "UnauthorizedError") {
-			return res.sendStatus(httpStatus.UNAUTHORIZED);
+			return unauthorized(res);
 		}
 		if (err.name === "NotFoundError") {
-			return res.sendStatus(httpStatus.NOT_FOUND);
+			return notFound(res);
 		}
-		return res.sendStatus(httpStatus.SERVER_ERROR);
+		return serverError(res);
 	}
 }
 
@@ -39,9 +39,9 @@ async function signOut(req, res) {
 
 	try {
 		await userService.logOut(token);
-		return res.sendStatus(httpStatus.OK);
+		return ok(res);
 	} catch (err) {
-		return res.sendStatus(httpStatus.SERVER_ERROR);
+		return serverError(res);
 	}
 }
 

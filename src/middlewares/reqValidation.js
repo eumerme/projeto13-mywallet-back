@@ -1,4 +1,4 @@
-import { httpStatus } from "../enums/index.js";
+import { unprocessableEntity } from "../utils/resReturn.js";
 
 function validate(schema, type) {
 	return (req, res, next) => {
@@ -14,7 +14,7 @@ function validate(schema, type) {
 				message = message.replace(`"confirmPassword" must be [ref:password]`, `As senhas devem ser iguais`);
 			}
 
-			return res.status(httpStatus.UNPROCESSABLE_ENTITY).send({ message });
+			return unprocessableEntity(res, message);
 		}
 
 		next();

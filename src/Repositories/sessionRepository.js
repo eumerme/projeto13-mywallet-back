@@ -9,4 +9,8 @@ async function deleteSession(token) {
 	return db.collection(collection.SESSIONS).deleteOne(token);
 }
 
-export const sessionRepository = { createSession, deleteSession };
+async function findSession(token) {
+	return db.collection(collection.SESSIONS).findOne(token);
+}
+
+export const sessionRepository = { createSession, deleteSession, findSession };

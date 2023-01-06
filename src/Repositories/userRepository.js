@@ -9,4 +9,8 @@ async function findUserByEmail(email) {
 	return db.collection(collection.USERS).findOne(email);
 }
 
-export const userRepository = { createUser, findUserByEmail };
+async function findUserById(id) {
+	return db.collection(collection.USERS).findOne({ _id: id });
+}
+
+export const userRepository = { createUser, findUserByEmail, findUserById };
