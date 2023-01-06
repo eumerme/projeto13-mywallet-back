@@ -1,29 +1,25 @@
-import { ObjectId } from "mongodb";
-import { db } from "../database/db.js";
-import { collection, httpStatus } from "../enums/index.js";
+import { transactionsService } from "../services/index.js";
+import { created, ok, serverError } from "../utils/resReturn.js";
 
-async function createTransaction(req, res) {
+async function postTransaction(req, res) {
 	const body = req.body;
 
 	try {
-		await db.collection(collection.TRANSACTIONS).insertOne(body);
-
-		return res.status(httpStatus.CREATED).send({ message: "Valor inserido com sucesso." });
+		await transactionsService.createTransaction(body);
+		return created(res);
 	} catch (err) {
-		return res.status(httpStatus.SERVER_ERROR).send(err.message);
+		return serverError(res);
 	}
 }
 
 async function getTransactions(req, res) {
 	const { user } = res.locals;
+
 	try {
-		const transactions = await db.collection(collection.TRANSACTIONS).find({ email: user.email }).toArray();
-
-		transactions.forEach((transaction) => delete transaction.email);
-
-		return res.status(httpStatus.OK).send(transactions);
+		const transactions = await transactionsService.findTransactions(user.email);
+		return ok(res, transactions);
 	} catch (err) {
-		return res.status(httpStatus.SERVER_ERROR).send(err.message);
+		return serverError(res);
 	}
 }
 
@@ -31,12 +27,14 @@ async function deleteTransaction(req, res) {
 	const { id } = req.params;
 
 	try {
-		await db.collection(collection.TRANSACTIONS).deleteOne({ _id: new ObjectId(id) });
-
-		return res.sendStatus(httpStatus.OK);
+		await transactionsService.deleteOneTransaction(id);
+		return ok(res);
 	} catch (err) {
-		return res.status(httpStatus.SERVER_ERROR).send(err.message);
+		if (err.name === "NotFoundError") {
+			return notFound(res);
+		}
+		return serverError(res);
 	}
 }
 
-export { createTransaction, getTransactions, deleteTransaction };
+export { postTransaction, getTransactions, deleteTransaction };
