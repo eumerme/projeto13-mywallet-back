@@ -1,5 +1,5 @@
 import { transactionsService } from "../services/index.js";
-import { created, ok, serverError } from "../utils/resReturn.js";
+import { created, notFound, ok, serverError } from "../utils/resReturn.js";
 
 async function postTransaction(req, res) {
 	const body = req.body;

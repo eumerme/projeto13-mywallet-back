@@ -14,7 +14,7 @@ async function findTransactions(email) {
 }
 
 async function deleteOneTransaction(id) {
-	const transactionExists = await transactionsRepository.findOneTransactionById({ id });
+	const transactionExists = await transactionsRepository.findOneTransactionById(id);
 	if (!transactionExists) {
 		throw notFoundError();
 	}
