@@ -11,7 +11,7 @@ async function findTransactionsToArray(email) {
 }
 
 async function findOneTransactionById(id) {
-	return db.collection(collection.TRANSACTIONS).findOne(id);
+	return db.collection(collection.TRANSACTIONS).findOne({ _id: new ObjectId(id) });
 }
 
 async function deleteOneTransactionById(id) {
