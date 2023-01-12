@@ -2,7 +2,7 @@
 
 MyWallet backend, a simple app for financial control.
 
-Try out the fronted app now at https://mywallet-eumerme.vercel.app/
+Try out the fronted app at https://mywallet-eumerme.vercel.app/
 
 # About
 
@@ -17,9 +17,9 @@ This project is a simple finance manager in which you can register earnings and 
 
 # API endpoints
 
-## `POST /signup`
+### `POST /signup`
 
-### Request:
+- Request:
 
 ```json
 {
@@ -30,11 +30,11 @@ This project is a simple finance manager in which you can register earnings and 
 }
 ```
 
-### Response: 201 Created
+- Response: 201 Created
 
-## `POST /login`
+### `POST /login`
 
-### Request:
+- Request:
 
 ```json
 {
@@ -43,15 +43,15 @@ This project is a simple finance manager in which you can register earnings and 
 }
 ```
 
-### Response: 200 Ok
+- Response: 200 Ok
 
-## `POST /logout`
+### `POST /logout`
 
-### Response: 200 Ok
+- Response: 200 Ok
 
-## `POST /transactions`
+### `POST /transactions`
 
-### Request:
+- Request:
 
 ```json
 {
@@ -63,11 +63,11 @@ This project is a simple finance manager in which you can register earnings and 
 }
 ```
 
-### Response: 201 Created
+- Response: 201 Created
 
-## `GET /transactions`
+### `GET /transactions`
 
-### Response: 200 Ok
+- Response: 200 Ok
 
 ```json
 {
@@ -80,6 +80,6 @@ This project is a simple finance manager in which you can register earnings and 
 }
 ```
 
-## `DELETE /transactions/:id`
+### `DELETE /transactions/:id`
 
-### Response: 200 Ok
+- Response: 200 Ok
