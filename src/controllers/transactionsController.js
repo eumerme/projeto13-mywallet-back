@@ -23,6 +23,22 @@ async function getTransactions(req, res) {
 	}
 }
 
+async function updateTransaction(req, res) {
+	const { id } = req.params;
+	const { user } = res.locals;
+	const body = req.body;
+
+	try {
+		await transactionsService.updateOneTransaction(id, user, body);
+		return ok(res);
+	} catch (err) {
+		if (err.name === "NotFoundError") {
+			return notFound(res);
+		}
+		return serverError(res);
+	}
+}
+
 async function deleteTransaction(req, res) {
 	const { id } = req.params;
 
@@ -37,4 +53,4 @@ async function deleteTransaction(req, res) {
 	}
 }
 
-export { postTransaction, getTransactions, deleteTransaction };
+export { postTransaction, getTransactions, updateTransaction, deleteTransaction };

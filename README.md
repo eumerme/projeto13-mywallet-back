@@ -65,6 +65,20 @@ This project is a simple finance manager in which you can register earnings and 
 
 - Response: 201 Created
 
+### `PATCH /transactions/:id`
+
+- Request:
+
+```json
+{
+	"value": 1500,
+	"description": "Janta",
+	"date": "07/01"
+}
+```
+
+- Response: 200 Ok
+
 ### `GET /transactions`
 
 - Response: 200 Ok

@@ -1,25 +1,38 @@
 import { transactionsRepository } from "../Repositories/index.js";
-import { notFoundError } from "../errors/index.js";
+import { notFoundError, unauthorizedError } from "../errors/index.js";
 
 async function createTransaction(body) {
-	return transactionsRepository.insertTransaction(body);
+	return transactionsRepository.insert(body);
 }
 
 async function findTransactions(email) {
-	const transactions = await transactionsRepository.findTransactionsToArray({ email });
+	const transactions = await transactionsRepository.findToArray({ email });
 
 	transactions.forEach((transaction) => delete transaction.email);
 
 	return transactions;
 }
 
-async function deleteOneTransaction(id) {
-	const transactionExists = await transactionsRepository.findOneTransactionById(id);
+async function updateOneTransaction(id, user, data) {
+	const transactionExists = await transactionsRepository.findOneById(id);
 	if (!transactionExists) {
 		throw notFoundError();
 	}
 
-	return transactionsRepository.deleteOneTransactionById(id);
+	if (transactionExists.email !== user.email) {
+		throw unauthorizedError();
+	}
+
+	return transactionsRepository.updateOneById(id, data);
 }
 
-export const transactionsService = { createTransaction, findTransactions, deleteOneTransaction };
+async function deleteOneTransaction(id) {
+	const transactionExists = await transactionsRepository.findOneById(id);
+	if (!transactionExists) {
+		throw notFoundError();
+	}
+
+	return transactionsRepository.deleteOneById(id);
+}
+
+export const transactionsService = { createTransaction, findTransactions, updateOneTransaction, deleteOneTransaction };

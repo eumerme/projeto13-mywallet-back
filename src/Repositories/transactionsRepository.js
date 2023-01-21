@@ -2,25 +2,30 @@ import { ObjectId } from "mongodb";
 import { db } from "../database/db.js";
 import { collection } from "../enums/index.js";
 
-async function insertTransaction(data) {
+async function insert(data) {
 	return db.collection(collection.TRANSACTIONS).insertOne(data);
 }
 
-async function findTransactionsToArray(email) {
+async function findToArray(email) {
 	return db.collection(collection.TRANSACTIONS).find(email).toArray();
 }
 
-async function findOneTransactionById(id) {
+async function findOneById(id) {
 	return db.collection(collection.TRANSACTIONS).findOne({ _id: new ObjectId(id) });
 }
 
-async function deleteOneTransactionById(id) {
+async function updateOneById(id, data) {
+	return db.collection(collection.TRANSACTIONS).updateOne({ _id: new ObjectId(id) }, { $set: data });
+}
+
+async function deleteOneById(id) {
 	return db.collection(collection.TRANSACTIONS).deleteOne({ _id: new ObjectId(id) });
 }
 
 export const transactionsRepository = {
-	insertTransaction,
-	findTransactionsToArray,
-	findOneTransactionById,
-	deleteOneTransactionById,
+	insert,
+	findToArray,
+	findOneById,
+	updateOneById,
+	deleteOneById,
 };
